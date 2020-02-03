@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+   <!--<link rel="stylesheet" type="text/css" href="static/style.css">-->
+    <title>Title</title>
+    <script type="text/Javascript">
+        $(function() {
+            GetTopTenStocks();
+
+});
+
+function Reload()
+{
+   var txt = $("#inputStockName")
+   if (txt.val() == null && txt.val() == '') {
+      GetTopTenStocks();
+   }
+}
+
+function GetTopTenStocks()
+{
+$.ajax({
+            url: 'GetTopTenStockData',
+            type: 'GET',
+            contentType: "application/json",
+            success: function(res) {
+              //parse the json response
+              var stockdata = JSON.parse(res);
+              if(stockdata != null)
+              {
+                  // var formattedJson = JSON.stringify(stockdata, null, '\t');
+                  //empty the table for reloading
+                   $('#tblstock').find('tbody').empty();
+                  var tr;
+                  for (var i = 0; i < stockdata.length; i++) {
+                    tr = $('<tr class="a"/>');
+                    tr.append("<td>" + stockdata[i].Code + "</td>");
+                    tr.append("<td>" + stockdata[i].Name + "</td>");
+                    tr.append("<td>" + stockdata[i].Open + "</td>");
+                     tr.append("<td>" + stockdata[i].High + "</td>");
+                    tr.append("<td>" + stockdata[i].Low + "</td>");
+                    tr.append("<td>" + stockdata[i].Close + "</td>");
+                    //$('tblstock').first().append(tr);
+                    $("#tblstock").find("tbody").append(tr);
+                  }
+              }
+              else
+              {
+                alert(res);
+              }
+
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+
+}
+
+function ClickSearch()
+{
+   var txt = $("#inputStockName")
+    if (txt.val() != null && txt.val() != '') {
+       search();
+    }
+    else
+    {
+       alert('Please enter Company Name')
+       GetTopTenStocks();
+    }
+}
+
+function Search()
+{
+    var txt = $("#inputStockName")
+    if (txt.val() != null && txt.val() != '')
+    {
+      $.ajax({
+         url: '/SearchByComapanyDetails',
+         type: 'POST',
+          data: {
+                name:$('#inputStockName').val()
+                },
+
+          success: function(res){
+
+                    //parse the json response
+                      var stockdata = JSON.parse(res);
+
+                      //empty the table for reloading
+                      $('#tblstock').find('tbody').empty();
+
+                      var tr;
+                      for (var i = 0; i < stockdata.length; i++) {
+                        tr = $('<tr class="a"/>');
+                        tr.append("<td>" + stockdata[i].Code + "</td>");
+                        tr.append("<td>" + stockdata[i].Name + "</td>");
+                        tr.append("<td>" + stockdata[i].Open + "</td>");
+                        tr.append("<td>" + stockdata[i].High + "</td>");
+                        tr.append("<td>" + stockdata[i].Low + "</td>");
+                        tr.append("<td>" + stockdata[i].Close + "</td>");
+                        //$('#tblstock').first().append(tr);
+                         $("#tblstock").find("tbody").append(tr);
+                      }
+
+
+             },
+          error:function(error){
+               alert(error);
+               console.log(error);
+          }
+
+    });
+ }
+  else {
+                   GetTopTenStocks();
+       }
+}
+
+
+
+function DownLoadCSV()
+{
+   $('#lblmsg').text("File downloading please wait...");
+ $.ajax({
+            url: 'DownloadCSV',  //exec('python /path/to/the/executable.py');
+            type: 'GET',
+            contentType: "application/json",
+            success: function(res) {
+            //$('#lblmsg').text("File download completed");
+             var msg  = JSON.parse(res)
+             //var subStr = msg.substring(0, 12);
+             //alert(subStr)
+             $('#lblmsg').text(msg);
+             GetTopTenStocks();
+            },
+            error:function(error){
+               alert(error);
+               //console.log(error);
+            }
+ });
+}
+    </script>
+
+    <style>
+       .header {
+              background-color: #000080 ;//NavyBlue;//#9933cc;
+              color: #ffffff;
+              padding: 5px;
+      }
+
+        table.StockDetails {
+          border-collapse: collapse;
+          border: 1px solid #ddd;
+          width:100%
+        }
+        tr.a:hover {background-color: #f5f5f5;}
+        tr.a:nth-child(even) {background-color: #f2f2f2;}
+        th.a {
+          background-color: Black;
+          color: white;
+            }
+
+            td{
+            text-align: center;
+            }
+
+      /*body {
+            background-image: url('static/images/Equity.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: 50% 50%;
+           }*/
+</style>
+</head>
+<body>
+
+
+
+<div  class="header">
+    <table id ='tblHeader'>
+        <tr>
+            <th>
+               <img src="static/images/ImgBhav.jpg"  height="100" width="100" >
+            </th>
+            <th width="20"></th>
+            <th>
+              <h1> BSE Bhav Copy</h1>
+            </th>
+
+        </tr>
+    </table>
+  </div>
+<div align="right" style="padding:30px 10px 0px 0px;">
+
+      <nav >
+          <a href="https://www.bseindia.com/" target="_blank" style="color: Red;"><b>BSE</b></a> |
+          <a href="https://www.bseindia.com/markets/MarketInfo/BhavCopy.aspx" target="_blank" style="color: red;"><b>BHAV Copy</b></a>
+      </nav>
+  </div>
+
+<table width="100%" >
+
+    <tr >
+        <td width="70%">
+            <div align="left" style="padding:50px 0px 0px 50px;">
+               <fieldset style="display: inline-block">
+                   <legend><b>Download Equity file</b></legend>
+                   <Button id ="btnDownload" onclick="DownLoadCSV()" width="100"  >Click here</Button>
+                   <label id="lblmsg" style="color:Green" > </label>
+               </fieldset>
+            </div>
+
+            <div align="left" style="padding:50px 0px 0px 50px;">
+               <fieldset style="display: inline-block">
+                   <legend ><b>Search by Company Name</b></legend>
+                   <input type="text" id="inputStockName"  autofocus required  onkeyup="Search()" placeholder="Enter Company Name"/>
+                   <Button id ="btnSearch" onclick="ClickSearch()" width="100" style=" cursor: pointer; " >Search </Button>
+               </fieldset>
+            </div>
+            <div style="padding:50px 0px 0px 50px;">
+               <fieldset style="overflow-x:auto;  height: 300px;" >
+                   <legend >Equity Stock Details:</legend>
+                   <table id ='tblstock' class="StockDetails">
+                     <thead>
+                      <tr >
+                         <th class="a" >Code</th>
+                         <th class="a">Name</th>
+                          <th class="a">Open</th>
+                         <th class="a">High</th>
+                          <th class="a" >Low</th>
+                         <th class="a" >Close</th>
+                       </tr>
+                      </thead>
+                    <tbody></tbody>
+            </table>
+               </fieldset>
+            </div>
+        </td>
+        <td width="30%" >
+            <div   style="padding:100px 0px 0px 0px">
+                <img src="static/images/Equity.jpg"  height="75%" width="75%" >
+            </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
+
